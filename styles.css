@@ -92,7 +92,7 @@ html.cgpt-ambient-on:not(.cgpt-legacy-composer) div[data-message-author-role="us
 }
 
 /* --- General Transparency Overrides --- */
-html.cgpt-ambient-on :is(main, #__next, .bg-token-bg-primary.sticky, header#page-header, .sticky.top-0.bg-token-main-surface-primary, div.sticky.top-14[class*="bg-token-bg-primary"]) {
+html.cgpt-ambient-on :is(#__next, .bg-token-bg-primary.sticky, header#page-header, .sticky.top-0.bg-token-main-surface-primary, div.sticky.top-14[class*="bg-token-bg-primary"]) {
   background-color: transparent !important;
   box-shadow: none !important;
   -webkit-backdrop-filter: none !important;
@@ -437,7 +437,7 @@ html.cgpt-light-mode .qs-row .track { background: rgba(0,0,0,0.1); }
 
 .qs-custom-select {
   position: relative;
-  max-width: 110px;
+  max-width: 150px;
   width: 100%;
 }
 .qs-select-trigger {
@@ -499,8 +499,8 @@ html:not(.cgpt-light-mode) .qs-color-dot {
   position: absolute;
   bottom: calc(100% + 6px);
   right: 0;
-  left: 0;
   z-index: 99999;
+  min-width: 170px; /* Give the panel enough width for its content */
   list-style: none;
   padding: 6px;
   margin: 0;
@@ -524,7 +524,7 @@ html.cgpt-light-mode .qs-select-options {
   display: flex;
   align-items: center;
   padding: 8px 10px;
-  font-size: 14px;
+  font-size: 13px;
   border-radius: 6px;
   cursor: pointer;
   gap: 8px;
@@ -571,4 +571,9 @@ form[data-type="unified-composer"] > div:is(.bg-token-bg-primary, [class*="dark:
               box-shadow 0.3s ease-in-out, 
               backdrop-filter 0.3s ease-in-out, 
               -webkit-backdrop-filter 0.3s ease-in-out;
+}
+
+/* Fix for composer's inner container background covering the blur effect */
+html.cgpt-ambient-on:not(.cgpt-legacy-composer) form[data-type="unified-composer"] > div > div > div {
+    background: transparent !important;
 }
