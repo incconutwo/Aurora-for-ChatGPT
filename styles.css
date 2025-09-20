@@ -13,6 +13,17 @@ html.cgpt-ambient-on body {
   z-index: -1;
   pointer-events: none;
   background-color: #000;
+  /* --- NEW: Smooth Transition Logic --- */
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.5s ease-in-out;
+}
+
+html.cgpt-bg-anim-disabled #cgpt-ambient-bg {
+  transition: none;
+}
+
+#cgpt-ambient-bg.bg-visible {
+  opacity: 1; /* Made visible via this class */
 }
 
 #cgpt-ambient-bg picture,
@@ -168,7 +179,7 @@ html.cgpt-ambient-on:not(.cgpt-legacy-composer):not(.cgpt-animations-disabled)
 }
 
 @media (prefers-color-scheme: dark) {
-  html.cgpt-ambient-on:not(.cgpt-light-mode):not(.cgpt-legacy-composer)
+  html.cgpt-ambient-on:not(.cgpt-legacy-composer)
     :is(
       .popover.bg-token-main-surface-primary[data-radix-menu-content],
       .popover.bg-token-main-surface-primary[role="dialog"],
@@ -350,7 +361,6 @@ html.cgpt-cute-voice-on .min-h-bloop::after { right: 45px; transform: rotate(35d
 html.cgpt-cute-voice-on .min-h-bloop > canvas { position: relative; z-index: 1; }
 
 /* --- Quick Settings UI --- */
-/* (This section was already well-structured, so it remains unchanged) */
 #cgpt-qs-btn {
   position: fixed;
   bottom: 12px;
@@ -373,7 +383,7 @@ html.cgpt-cute-voice-on .min-h-bloop > canvas { position: relative; z-index: 1; 
 #cgpt-qs-btn:hover { transform: scale(1.08); }
 #cgpt-qs-btn svg { width: 20px; height: 20px; color: white; opacity: 0.9; }
 html.cgpt-light-mode #cgpt-qs-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.3);
   border-color: rgba(0,0,0,0.1);
 }
 html.cgpt-light-mode #cgpt-qs-btn svg { color: #000; }
@@ -384,10 +394,10 @@ html.cgpt-light-mode #cgpt-qs-btn svg { color: #000; }
   right: 16px;
   z-index: 99997;
   width: 260px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  backdrop-filter: blur(22px) saturate(140%);
+  background: rgba(30, 29, 43, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
   border-radius: 14px;
   box-shadow: 0 16px 50px rgba(0,0,0,0.45);
   padding: 8px;
@@ -403,8 +413,8 @@ html.cgpt-light-mode #cgpt-qs-btn svg { color: #000; }
   pointer-events: auto;
 }
 html.cgpt-light-mode #cgpt-qs-panel {
-    background: rgba(255, 255, 255, 0.242);
-    border-color: rgba(0,0,0,0.072);
+    background: rgba(245, 245, 245, 0.7); /* Milker light background */
+    border-color: rgba(0,0,0,0.1);
     color: #000;
 }
 
@@ -423,17 +433,39 @@ html.cgpt-light-mode #cgpt-qs-panel {
   border-radius: 6px;
   transition: background 0.2s ease;
 }
-.qs-row:hover { background: rgba(255, 255, 255, 0.08); }
-html.cgpt-light-mode .qs-row:hover { background: rgba(0,0,0,0.06); }
+.qs-row:hover { background: rgba(255, 255, 255, 0.1); }
+html.cgpt-light-mode .qs-row:hover { background: rgba(0,0,0,0.08); }
 .qs-row > label { font-size: 14px; opacity: 0.95; }
 
-.qs-row .switch { position: relative; width: 46px; height: 26px; flex: 0 0 auto; }
+/* UNIFIED SWITCH STYLES (Ensures smooth, consistent animations) */
+.qs-row .switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
 .qs-row .switch input { display: none; }
-.qs-row .track { position: absolute; inset: 0; border-radius: 999px; background: rgba(0,0,0,0.3); transition: background .2s ease; }
-html.cgpt-light-mode .qs-row .track { background: rgba(0,0,0,0.1); }
+.qs-row .track {
+  position: absolute;
+  inset: 0;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background .2s ease;
+}
+html.cgpt-light-mode .qs-row .track { background: rgba(0, 0, 0, 0.15); }
 .qs-row input:checked + .track { background: #4f8cff; }
-.qs-row .thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s ease; }
-.qs-row input:checked + .track .thumb { transform: translateX(20px); }
+.qs-row .thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  transition: transform .2s ease;
+}
+.qs-row input:checked + .track .thumb { transform: translateX(18px); }
 
 .qs-custom-select {
   position: relative;
@@ -447,9 +479,7 @@ html.cgpt-light-mode .qs-row .track { background: rgba(0,0,0,0.1); }
   padding: 4px 10px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(255, 255, 255, 0.05);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.08);
   color: inherit;
   font-size: 13px;
   text-align: left;
@@ -459,14 +489,10 @@ html.cgpt-light-mode .qs-row .track { background: rgba(0,0,0,0.1); }
 }
 html.cgpt-light-mode .qs-select-trigger {
   border-color: rgba(0, 0, 0, 0.08);
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: rgba(0, 0, 0, 0.05);
 }
-.qs-select-trigger:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-html.cgpt-light-mode .qs-select-trigger:hover {
-  background-color: rgba(0, 0, 0, 0.08);
-}
+.qs-select-trigger:hover { background-color: rgba(255, 255, 255, 0.15); }
+html.cgpt-light-mode .qs-select-trigger:hover { background-color: rgba(0, 0, 0, 0.1); }
 .qs-select-trigger > .qs-select-label {
   flex-grow: 1;
   white-space: nowrap;
@@ -482,9 +508,7 @@ html.cgpt-light-mode .qs-select-trigger:hover {
   opacity: 0.7;
   transition: transform 0.2s ease;
 }
-.qs-select-trigger[aria-expanded="true"] svg {
-  transform: rotate(180deg);
-}
+.qs-select-trigger[aria-expanded="true"] svg { transform: rotate(180deg); }
 .qs-color-dot {
   width: 14px;
   height: 14px;
@@ -492,33 +516,30 @@ html.cgpt-light-mode .qs-select-trigger:hover {
   flex-shrink: 0;
   border: 1px solid rgba(0,0,0,0.1);
 }
-html:not(.cgpt-light-mode) .qs-color-dot {
-  border-color: rgba(255,255,255,0.1);
-}
+html:not(.cgpt-light-mode) .qs-color-dot { border-color: rgba(255,255,255,0.1); }
+
 .qs-select-options {
   position: absolute;
   bottom: calc(100% + 6px);
   right: 0;
   z-index: 99999;
-  min-width: 170px; /* Give the panel enough width for its content */
+  min-width: 170px;
   list-style: none;
   padding: 6px;
   margin: 0;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  backdrop-filter: blur(22px) saturate(140%);
+  background: rgba(30, 29, 43, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
   border-radius: 10px;
   box-shadow: 0 16px 50px rgba(0,0,0,0.45);
   max-height: 200px;
   overflow-y: auto;
 }
-.qs-select-options::-webkit-scrollbar {
-  display: none;
-}
+.qs-select-options::-webkit-scrollbar { display: none; }
 html.cgpt-light-mode .qs-select-options {
-  background: rgba(255, 255, 255, 0.242);
-  border-color: rgba(0,0,0,0.072);
+  background: rgba(245, 245, 245, 0.75); /* Milker light background */
+  border-color: rgba(0,0,0,0.1);
 }
 .qs-select-option {
   display: flex;
@@ -530,15 +551,9 @@ html.cgpt-light-mode .qs-select-options {
   gap: 8px;
   transition: background-color 0.2s ease;
 }
-.qs-select-option:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-html.cgpt-light-mode .qs-select-option:hover {
-  background-color: rgba(0, 0, 0, 0.06);
-}
-.qs-select-option[aria-selected="true"] {
-  font-weight: 500;
-}
+.qs-select-option:hover { background-color: rgba(255, 255, 255, 0.1); }
+html.cgpt-light-mode .qs-select-option:hover { background-color: rgba(0, 0, 0, 0.08); }
+.qs-select-option[aria-selected="true"] { font-weight: 500; }
 .qs-select-option .qs-checkmark {
   margin-left: auto;
   width: 16px;
@@ -546,9 +561,7 @@ html.cgpt-light-mode .qs-select-option:hover {
   stroke: currentColor;
   opacity: 0;
 }
-.qs-select-option[aria-selected="true"] .qs-checkmark {
-  opacity: 1;
-}
+.qs-select-option[aria-selected="true"] .qs-checkmark { opacity: 1; }
 
 /* Focus Mode Rules */
 html.cgpt-focus-mode-on .flex-shrink-0[class*="bg-token-sidebar-surface-primary"],
