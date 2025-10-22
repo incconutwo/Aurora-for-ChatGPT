@@ -56,10 +56,10 @@ const SELECTORS = {
     });
   };
 
-  const getMessage = (key) => {
+  const getMessage = (key, substitutions) => {
     try {
       if (chrome?.i18n?.getMessage && chrome.runtime?.id) {
-        const text = chrome.i18n.getMessage(key);
+        const text = chrome.i18n.getMessage(key, substitutions);
         if (text) return text;
       }
     } catch (e) {
@@ -671,200 +671,459 @@ function manageUpgradeButtons() {
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   }
 
-  const getWelcomeScreenHTML = () => `
-    <div id="aurora-welcome-overlay">
-        <div class="welcome-container">
-            <!-- Screen 1: Introduction -->
-            <div id="screen-1" class="screen active">
-                <div class="content-panel">
-                    <div class="logo">✨</div>
-                    <h1>${getMessage('welcomeTitle')}</h1>
-                    <p>${getMessage('welcomeDescription')}</p>
-                    <button id="get-started-btn" class="welcome-btn primary">${getMessage('welcomeBtnGetStarted')}</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bar 1: Style Setup -->
-        <div id="aurora-style-bar" class="aurora-setup-bar">
-            <div class="setup-section">
-                <label class="section-label">${getMessage('welcomeLabelBgPreset')}</label>
-                <div class="preset-grid">
-                    <button class="preset-tile" data-bg-url="default">
-                        <div class="preview default"></div>
-                        <span>${getMessage('welcomePresetDefault')}</span>
-                    </button>
-                    <button class="preset-tile" data-bg-url="__gpt5_animated__">
-                        <div class="preview animated"></div>
-                        <span>${getMessage('welcomePresetAnimated')}</span>
-                    </button>
-                    <button class="preset-tile" data-bg-url="grokHorizon">
-                        <div class="preview grok"></div>
-                        <span>${getMessage('welcomePresetHorizon')}</span>
-                    </button>
-                    <button class="preset-tile" data-bg-url="blue">
-                        <div class="preview blue"></div>
-                        <span>${getMessage('welcomePresetBlue')}</span>
-                    </button>
-                </div>
-            </div>
-            <div class="setup-section">
-                <label class="section-label">${getMessage('welcomeLabelGlassStyle')}</label>
-                <div class="pill-group">
-                    <button class="pill-btn" data-appearance="clear">${getMessage('welcomeGlassClear')}</button>
-                    <button class="pill-btn" data-appearance="dimmed">${getMessage('welcomeGlassDimmed')}</button>
-                </div>
-            </div>
-            <button id="next-btn" class="welcome-btn primary finish-button">${getMessage('welcomeBtnNext')}</button>
-        </div>
-
-        <!-- Bar 2: Voice Setup -->
-        <div id="aurora-voice-bar" class="aurora-setup-bar">
-            <div class="setup-section voice-header">
-                <label class="section-label">${getMessage('welcomeLabelVoice')}</label>
-                <span class="listen-text">${getMessage('welcomeBtnListen')}</span>
-            </div>
-            <div class="setup-section voice-controls">
-                <div class="pill-group" id="voice-color-pills">
-                    <!-- Voice color pills will be injected here -->
-                </div>
-                <div class="cute-ui-control">
-                    <label>${getMessage('labelCuteVoice')}</label>
-                    <label class="switch"><input type="checkbox" id="welcome-cuteVoiceUI"><span class="track"><span class="thumb"></span></span></label>
-                </div>
-            </div>
-            <button id="finish-btn" class="welcome-btn primary finish-button">${getMessage('welcomeBtnFinish')}</button>
-        </div>
-    </div>
-  `;
+  
 
   function showWelcomeScreen() {
-    const welcomeNode = document.createElement('div');
-    welcomeNode.innerHTML = getWelcomeScreenHTML();
-    if (welcomeNode.firstElementChild) {
-      document.body.appendChild(welcomeNode.firstElementChild);
+    if (document.getElementById('aurora-welcome-overlay')) return;
+
+    if (!document.body) {
+      document.addEventListener('DOMContentLoaded', showWelcomeScreen, { once: true });
+      return;
     }
 
-    // Get all elements at once
-    const getStartedBtn = document.getElementById('get-started-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const finishBtn = document.getElementById('finish-btn');
-    const welcomeOverlay = document.getElementById('aurora-welcome-overlay');
-    const welcomeContainer = document.querySelector('.welcome-container');
-    const styleBar = document.getElementById('aurora-style-bar');
-    const voiceBar = document.getElementById('aurora-voice-bar');
-    const welcomeCuteVoiceUIToggle = document.getElementById('welcome-cuteVoiceUI');
-    
-    let tempSettings = { ...settings }; // Clone settings for preview
+    const originalSettings = { ...settings };
+    let previewSettings = { ...originalSettings };
 
-    // --- Event Listeners ---
-    if (getStartedBtn) {
-      getStartedBtn.addEventListener('click', () => {
-          if (welcomeOverlay) {
-            welcomeOverlay.classList.add('setup-active');
-          }
+    const determineBgPreset = (value) => {
+      if (!value) return 'default';
+      if (value === '__gpt5_animated__') return 'animated';
+      if (value === GROK_HORIZON_URL) return 'grok';
+      if (value === BLUE_WALLPAPER_URL) return 'blue';
+      return 'custom';
+    };
 
-          if (welcomeContainer) {
-              setTimeout(() => {
-                  welcomeContainer.style.display = 'none';
-                  if (styleBar) styleBar.classList.add('active');
-              }, 400); 
-          } else {
-            if (styleBar) styleBar.classList.add('active');
-          }
-
-          // Initialize with defaults visually
-          document.querySelector('#aurora-style-bar .preset-tile[data-bg-url="default"]').classList.add('active');
-          document.querySelector('#aurora-style-bar .pill-btn[data-appearance="clear"]').classList.add('active');
-      });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            if (styleBar) styleBar.classList.remove('active');
-            document.querySelector('[data-testid="composer-speech-button"]')?.click();
-
-            setTimeout(() => {
-                if(voiceBar) voiceBar.classList.add('active');
-            }, 500); 
-        });
-    }
-
-    // --- Dynamic Voice Color Pills ---
-    const voiceColorOptions = [
-        { value: 'default', color: '#8EBBFF' }, { value: 'orange', color: '#FF9900' },
-        { value: 'yellow', color: '#FFD700' }, { value: 'pink', color: '#FF69B4' },
-        { value: 'green', color: '#32CD32' }, { value: 'dark', color: '#555555' }
+    const backgroundPresets = [
+      { id: 'default', label: getMessage('welcomePresetDefault'), previewClass: 'default', value: '' },
+      { id: 'animated', label: getMessage('welcomePresetAnimated'), previewClass: 'animated', value: '__gpt5_animated__' },
+      { id: 'grok', label: getMessage('welcomePresetHorizon'), previewClass: 'grok', value: GROK_HORIZON_URL },
+      { id: 'blue', label: getMessage('welcomePresetBlue'), previewClass: 'blue', value: BLUE_WALLPAPER_URL },
     ];
-    const voicePillsContainer = document.getElementById('voice-color-pills');
-    if (voicePillsContainer) {
-        voiceColorOptions.forEach(opt => {
-            const pill = document.createElement('button');
-            pill.className = 'pill-btn voice-pill';
-            pill.dataset.value = opt.value;
-            pill.innerHTML = `<span class="qs-color-dot" style="background-color: ${opt.color};"></span>`;
-            
-            pill.addEventListener('click', () => {
-                voicePillsContainer.querySelectorAll('.voice-pill').forEach(p => p.classList.remove('active'));
-                pill.classList.add('active');
-                tempSettings.voiceColor = opt.value;
-                settings.voiceColor = opt.value; // for live preview
-                applyAllSettings();
-            });
-            voicePillsContainer.appendChild(pill);
-        });
-    }
-    const defaultVoicePill = document.querySelector('.voice-pill[data-value="default"]');
-    if (defaultVoicePill) defaultVoicePill.classList.add('active');
-    
-    if (welcomeCuteVoiceUIToggle) {
-        welcomeCuteVoiceUIToggle.addEventListener('change', (e) => {
-            const isChecked = e.target.checked;
-            tempSettings.cuteVoiceUI = isChecked;
-            settings.cuteVoiceUI = isChecked; // for live preview
-            applyAllSettings();
-        });
-    }
 
-    document.querySelectorAll('#aurora-style-bar .preset-tile').forEach(tile => {
-        tile.addEventListener('click', () => {
-            document.querySelectorAll('#aurora-style-bar .preset-tile').forEach(t => t.classList.remove('active'));
-            tile.classList.add('active');
-            const bgChoice = tile.dataset.bgUrl;
-            let newUrl = '';
-            if (bgChoice === 'blue') newUrl = BLUE_WALLPAPER_URL;
-            else if (bgChoice === 'grokHorizon') newUrl = GROK_HORIZON_URL;
-            else if (bgChoice === '__gpt5_animated__') newUrl = '__gpt5_animated__';
-            
-            tempSettings.customBgUrl = newUrl;
-            settings.customBgUrl = newUrl; // Mutate global settings for live preview
-            applyAllSettings();
-        });
-    });
+    const appearanceOptions = [
+      { value: 'clear', label: getMessage('welcomeGlassClear') },
+      { value: 'dimmed', label: getMessage('welcomeGlassDimmed') },
+    ];
 
-    document.querySelectorAll('#aurora-style-bar .pill-btn').forEach(pill => {
-        pill.addEventListener('click', () => {
-            document.querySelectorAll('#aurora-style-bar .pill-btn').forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            const appearanceChoice = pill.dataset.appearance;
-            tempSettings.appearance = appearanceChoice;
-            settings.appearance = appearanceChoice; // Mutate for live preview
-            applyAllSettings();
-        });
-    });
+    const voiceColorOptions = [
+      { value: 'default', labelKey: 'voiceColorOptionDefault', color: '#8EBBFF' },
+      { value: 'orange', labelKey: 'voiceColorOptionOrange', color: '#FF9900' },
+      { value: 'yellow', labelKey: 'voiceColorOptionYellow', color: '#FFD700' },
+      { value: 'pink', labelKey: 'voiceColorOptionPink', color: '#FF69B4' },
+      { value: 'green', labelKey: 'voiceColorOptionGreen', color: '#32CD32' },
+      { value: 'dark', labelKey: 'voiceColorOptionDark', color: '#555555' },
+    ];
 
-    if (finishBtn) {
-      finishBtn.addEventListener('click', () => {
-          tempSettings.hasSeenWelcomeScreen = true;
-          chrome.storage.sync.set(tempSettings, () => {
-              if (chrome.runtime.lastError) {
-                  console.error("Aurora Extension Error (Welcome Finish):", chrome.runtime.lastError.message);
-                  return;
-              }
-              if (welcomeOverlay) welcomeOverlay.remove();
-          });
+    const featureHighlights = [
+      { icon: '🌌', text: getMessage('welcomeFeatureAmbient') },
+      { icon: '🪟', text: getMessage('welcomeFeatureGlass') },
+      { icon: '🎙️', text: getMessage('welcomeFeatureVoice') },
+    ];
+
+    const selectedBgPreset = determineBgPreset(previewSettings.customBgUrl);
+    const selectedAppearance = previewSettings.appearance || 'clear';
+    const selectedVoiceColor = previewSettings.voiceColor || 'default';
+    const cuteVoiceEnabled = !!previewSettings.cuteVoiceUI;
+
+    const featureItemsHtml = featureHighlights.map(item => `
+            <li>
+              <span class="feature-icon" aria-hidden="true">${item.icon}</span>
+              <span>${item.text}</span>
+            </li>
+          `).join('');
+
+    const backgroundTilesMarkup = backgroundPresets.map(preset => `
+              <button type="button" class="preset-tile${selectedBgPreset === preset.id ? ' active' : ''}" data-bg-preset="${preset.id}" role="radio" aria-checked="${selectedBgPreset === preset.id}" tabindex="${selectedBgPreset === preset.id ? '0' : '-1'}">
+                <div class="preview ${preset.previewClass}"></div>
+                <span>${preset.label}</span>
+              </button>
+            `).join('');
+
+    const appearanceMarkup = appearanceOptions.map(option => `
+              <button type="button" class="pill-btn${selectedAppearance === option.value ? ' active' : ''}" data-appearance="${option.value}" role="radio" aria-checked="${selectedAppearance === option.value}" tabindex="${selectedAppearance === option.value ? '0' : '-1'}">
+                ${option.label}
+              </button>
+            `).join('');
+
+    const voicePillsMarkup = voiceColorOptions.map(option => `
+              <button type="button" class="pill-btn voice-pill${selectedVoiceColor === option.value ? ' active' : ''}" data-voice-color="${option.value}" role="radio" aria-checked="${selectedVoiceColor === option.value}" tabindex="${selectedVoiceColor === option.value ? '0' : '-1'}">
+                <span class="qs-color-dot" style="background-color: ${option.color};"></span>
+                <span class="qs-select-label">${getMessage(option.labelKey)}</span>
+              </button>
+            `).join('');
+
+    const overlay = document.createElement('div');
+    overlay.id = 'aurora-welcome-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'aurora-welcome-title');
+    overlay.setAttribute('tabindex', '-1');
+
+    overlay.innerHTML = `
+      <div class="welcome-shell">
+        <div class="screen">
+          <div class="content-panel">
+            <button class="peek-btn" type="button" data-action="peek" aria-label="${getMessage('welcomePeekLabel')}" aria-pressed="false">
+              <span class="eye-open" aria-hidden="true">👁️</span>
+              <span class="eye-closed" aria-hidden="true">🙈</span>
+            </button>
+            <div class="logo">✨</div>
+            <h1 id="aurora-welcome-title">${getMessage('welcomeTitle')}</h1>
+            <p class="welcome-subtitle">${getMessage('welcomeSubtitle')}</p>
+            <ul class="welcome-feature-list">
+              ${featureItemsHtml}
+            </ul>
+            <div class="welcome-actions">
+              <button class="welcome-btn primary start-button" type="button" data-action="start">${getMessage('welcomeBtnGetStarted')}</button>
+              <button class="welcome-btn ghost" type="button" data-action="skip">${getMessage('welcomeBtnSkip')}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="aurora-peek-controls">
+        <div class="pill-group">
+          <button class="pill-btn" type="button" data-action="resume">${getMessage('welcomePeekResume')}</button>
+          <button class="pill-btn" type="button" data-action="skip">${getMessage('welcomePeekSkip')}</button>
+        </div>
+      </div>
+      <div id="aurora-setup-bar" class="aurora-setup-bar" data-step="1" aria-live="polite">
+        <div class="aurora-setup-step setup-step-1 active" data-step-index="1">
+          <div class="step-heading">
+            <div>
+              <h2>${getMessage('welcomeTitleSetup')}</h2>
+              <p>${getMessage('welcomeDescriptionSetup')}</p>
+            </div>
+            <span class="step-indicator">${getMessage('welcomeStepIndicator', ['1', '2'])}</span>
+          </div>
+          <div class="setup-section">
+            <label class="section-label">${getMessage('welcomeLabelBgPreset')}</label>
+            <div class="preset-grid" data-bg-group role="radiogroup" aria-label="${getMessage('welcomeLabelBgPreset')}">
+              ${backgroundTilesMarkup}
+            </div>
+          </div>
+          <div class="setup-section">
+            <label class="section-label">${getMessage('welcomeLabelGlassStyle')}</label>
+            <div class="pill-group" data-appearance-group role="radiogroup" aria-label="${getMessage('welcomeLabelGlassStyle')}">
+              ${appearanceMarkup}
+            </div>
+          </div>
+          <div class="step-actions">
+            <button class="welcome-btn ghost" type="button" data-action="skip">${getMessage('welcomeBtnSkip')}</button>
+            <button class="welcome-btn primary" type="button" data-action="next">${getMessage('welcomeBtnNext')}</button>
+          </div>
+        </div>
+        <div class="aurora-setup-step setup-step-2" data-step-index="2">
+          <div class="step-heading">
+            <div>
+              <h2>${getMessage('welcomeTitleVoiceSetup')}</h2>
+              <p>${getMessage('welcomeDescriptionVoiceSetup')}</p>
+            </div>
+            <span class="step-indicator">${getMessage('welcomeStepIndicator', ['2', '2'])}</span>
+          </div>
+          <div class="setup-section voice-selection">
+            <div class="voice-selection-header">
+              <label class="section-label">${getMessage('welcomeLabelVoice')}</label>
+              <button class="listen-button" type="button" data-action="preview-voice">${getMessage('welcomeBtnPreviewVoice')}</button>
+            </div>
+            <div class="voice-pill-group" data-voice-group role="radiogroup" aria-label="${getMessage('welcomeLabelVoice')}">
+              ${voicePillsMarkup}
+            </div>
+          </div>
+          <div class="setup-section cute-ui-control">
+            <span>${getMessage('labelCuteVoice')}</span>
+            <label class="switch">
+              <input type="checkbox" id="welcome-cuteVoiceUI"${cuteVoiceEnabled ? ' checked' : ''}>
+              <span class="track"><span class="thumb"></span></span>
+            </label>
+          </div>
+          <div class="step-actions">
+            <button class="welcome-btn ghost back-button" type="button" data-action="back">${getMessage('welcomeBtnBack')}</button>
+            <button class="welcome-btn primary finish-button" type="button" data-action="finish">${getMessage('welcomeBtnFinish')}</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    overlay.focus({ preventScroll: true });
+
+    const setupBar = overlay.querySelector('#aurora-setup-bar');
+    const peekButton = overlay.querySelector('[data-action="peek"]');
+    const backgroundGroup = overlay.querySelector('[data-bg-group]');
+    const appearanceGroup = overlay.querySelector('[data-appearance-group]');
+    const voiceGroup = overlay.querySelector('[data-voice-group]');
+    const cuteToggle = overlay.querySelector('#welcome-cuteVoiceUI');
+
+    const applyPreview = () => {
+      settings = { ...previewSettings };
+      applyAllSettings();
+    };
+
+    const updateBackgroundUI = () => {
+      const activePreset = determineBgPreset(previewSettings.customBgUrl);
+      overlay.querySelectorAll('[data-bg-preset]').forEach(btn => {
+        const isActive = btn.dataset.bgPreset === activePreset;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', String(isActive));
+        btn.setAttribute('tabindex', isActive ? '0' : '-1');
       });
-    }
+    };
+
+    const updateAppearanceUI = () => {
+      const activeAppearance = previewSettings.appearance || 'clear';
+      overlay.querySelectorAll('[data-appearance]').forEach(btn => {
+        const isActive = btn.dataset.appearance === activeAppearance;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', String(isActive));
+        btn.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
+    };
+
+    const updateVoiceUI = () => {
+      const activeVoice = previewSettings.voiceColor || 'default';
+      overlay.querySelectorAll('[data-voice-color]').forEach(btn => {
+        const isActive = btn.dataset.voiceColor === activeVoice;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', String(isActive));
+        btn.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
+    };
+
+    const updateCuteToggle = () => {
+      if (cuteToggle) cuteToggle.checked = !!previewSettings.cuteVoiceUI;
+    };
+
+    const goToStep = (step) => {
+      if (!setupBar) return;
+      const totalSteps = 2;
+      const targetStep = Math.min(Math.max(step, 1), totalSteps);
+      setupBar.setAttribute('data-step', String(targetStep));
+      setupBar.querySelectorAll('.aurora-setup-step').forEach(stepEl => {
+        const isActive = Number(stepEl.dataset.stepIndex) === targetStep;
+        stepEl.classList.toggle('active', isActive);
+        stepEl.setAttribute('aria-hidden', String(!isActive));
+      });
+
+      const focusTarget =
+        targetStep === 1
+          ? overlay.querySelector('[data-bg-preset].active') || overlay.querySelector('[data-bg-preset]')
+          : overlay.querySelector('[data-voice-color].active') || overlay.querySelector('[data-voice-color]');
+      focusTarget?.focus();
+    };
+
+    const setPeekMode = (enabled) => {
+      overlay.classList.toggle('peek-mode', enabled);
+      if (peekButton) peekButton.setAttribute('aria-pressed', String(enabled));
+      if (enabled) {
+        setupBar?.classList.remove('active');
+      } else if (overlay.classList.contains('setup-active')) {
+        setupBar?.classList.add('active');
+      }
+    };
+
+    const restoreOriginalSettings = (markSeen) => {
+      const base = { ...originalSettings };
+      if (markSeen) base.hasSeenWelcomeScreen = true;
+      settings = { ...base };
+      previewSettings = { ...base };
+      applyAllSettings();
+    };
+
+    let closed = false;
+
+    const cleanup = () => {
+      if (closed) return;
+      closed = true;
+      overlay.removeEventListener('click', handleClick);
+      overlay.removeEventListener('change', handleChange);
+      backgroundGroup?.removeEventListener('keydown', handleBackgroundKeydown);
+      appearanceGroup?.removeEventListener('keydown', handleAppearanceKeydown);
+      voiceGroup?.removeEventListener('keydown', handleVoiceKeydown);
+      document.removeEventListener('keydown', handleDocumentKeydown);
+      if (overlay.parentElement) overlay.remove();
+    };
+
+    const finishSetup = () => {
+      if (closed) return;
+      const finalSettings = { ...previewSettings, hasSeenWelcomeScreen: true };
+      settings = { ...finalSettings };
+      previewSettings = { ...finalSettings };
+      applyAllSettings();
+      chrome.storage.sync.set(finalSettings, () => {
+        if (chrome.runtime.lastError) {
+          console.error("Aurora Extension Error (Welcome Finish):", chrome.runtime.lastError.message);
+        }
+      });
+      cleanup();
+    };
+
+    const skipSetup = () => {
+      if (closed) return;
+      restoreOriginalSettings(true);
+      chrome.storage.sync.set({ hasSeenWelcomeScreen: true }, () => {
+        if (chrome.runtime.lastError) {
+          console.error("Aurora Extension Error (Welcome Skip):", chrome.runtime.lastError.message);
+        }
+      });
+      cleanup();
+    };
+
+    const startSetup = () => {
+      if (closed || !setupBar) return;
+      overlay.classList.add('setup-active');
+      setPeekMode(false);
+      requestAnimationFrame(() => {
+        setupBar.classList.add('active');
+        goToStep(1);
+      });
+    };
+
+    const applyBackgroundPreset = (presetId) => {
+      const preset = backgroundPresets.find(item => item.id === presetId);
+      if (!preset) return;
+      previewSettings.customBgUrl = preset.value;
+      applyPreview();
+      updateBackgroundUI();
+    };
+
+    const applyAppearance = (appearance) => {
+      if (!appearance) return;
+      previewSettings.appearance = appearance;
+      applyPreview();
+      updateAppearanceUI();
+    };
+
+    const applyVoiceColor = (value) => {
+      if (!value) return;
+      previewSettings.voiceColor = value;
+      applyPreview();
+      updateVoiceUI();
+    };
+
+    const toggleCuteVoice = (enabled) => {
+      previewSettings.cuteVoiceUI = enabled;
+      applyPreview();
+      updateCuteToggle();
+    };
+
+    const handleClick = (event) => {
+      const actionable = event.target.closest('[data-action]');
+      if (actionable) {
+        event.preventDefault();
+        const action = actionable.dataset.action;
+        switch (action) {
+          case 'start':
+            startSetup();
+            break;
+          case 'next':
+            goToStep(2);
+            setTimeout(() => {
+              document.querySelector('[data-testid="composer-speech-button"]')?.click();
+            }, 250);
+            break;
+          case 'back':
+            goToStep(1);
+            break;
+          case 'finish':
+            finishSetup();
+            break;
+          case 'skip':
+            skipSetup();
+            break;
+          case 'peek':
+            setPeekMode(!overlay.classList.contains('peek-mode'));
+            break;
+          case 'resume':
+            setPeekMode(false);
+            break;
+          case 'preview-voice':
+            setPeekMode(true);
+            document.querySelector('[data-testid="composer-speech-button"]')?.click();
+            break;
+          default:
+            break;
+        }
+        return;
+      }
+
+      const bgButton = event.target.closest('[data-bg-preset]');
+      if (bgButton) {
+        event.preventDefault();
+        applyBackgroundPreset(bgButton.dataset.bgPreset);
+        return;
+      }
+
+      const appearanceButton = event.target.closest('[data-appearance]');
+      if (appearanceButton) {
+        event.preventDefault();
+        applyAppearance(appearanceButton.dataset.appearance);
+      }
+
+      const voiceButton = event.target.closest('[data-voice-color]');
+      if (voiceButton) {
+        event.preventDefault();
+        applyVoiceColor(voiceButton.dataset.voiceColor);
+      }
+    };
+
+    const handleChange = (event) => {
+      if (event.target.id === 'welcome-cuteVoiceUI') {
+        toggleCuteVoice(event.target.checked);
+      }
+    };
+
+    const moveWithinGroup = (elements, direction) => {
+      if (!elements.length) return;
+      const activeIndex = elements.findIndex(el => el.classList.contains('active'));
+      const currentIndex = activeIndex >= 0 ? activeIndex : 0;
+      const delta = direction === 'prev' ? -1 : 1;
+      const nextIndex = (currentIndex + delta + elements.length) % elements.length;
+      elements[nextIndex].focus();
+      elements[nextIndex].click();
+    };
+
+    const handleBackgroundKeydown = (event) => {
+      if (!['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.key)) return;
+      event.preventDefault();
+      const buttons = Array.from(backgroundGroup.querySelectorAll('[data-bg-preset]'));
+      moveWithinGroup(buttons, (event.key === 'ArrowLeft' || event.key === 'ArrowUp') ? 'prev' : 'next');
+    };
+
+    const handleAppearanceKeydown = (event) => {
+      if (!['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.key)) return;
+      event.preventDefault();
+      const buttons = Array.from(appearanceGroup.querySelectorAll('[data-appearance]'));
+      moveWithinGroup(buttons, (event.key === 'ArrowLeft' || event.key === 'ArrowUp') ? 'prev' : 'next');
+    };
+
+    const handleVoiceKeydown = (event) => {
+      if (!['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.key)) return;
+      event.preventDefault();
+      const buttons = Array.from(voiceGroup.querySelectorAll('[data-voice-color]'));
+      moveWithinGroup(buttons, (event.key === 'ArrowLeft' || event.key === 'ArrowUp') ? 'prev' : 'next');
+    };
+
+    const handleDocumentKeydown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (overlay.classList.contains('peek-mode')) {
+          setPeekMode(false);
+        } else {
+          skipSetup();
+        }
+      }
+    };
+
+    overlay.addEventListener('click', handleClick);
+    overlay.addEventListener('change', handleChange);
+    backgroundGroup?.addEventListener('keydown', handleBackgroundKeydown);
+    appearanceGroup?.addEventListener('keydown', handleAppearanceKeydown);
+    voiceGroup?.addEventListener('keydown', handleVoiceKeydown);
+    document.addEventListener('keydown', handleDocumentKeydown);
+
+    updateBackgroundUI();
+    updateAppearanceUI();
+    updateVoiceUI();
+    updateCuteToggle();
   }
 
   // --- NEW: Initialization and Robust Settings Listener ---

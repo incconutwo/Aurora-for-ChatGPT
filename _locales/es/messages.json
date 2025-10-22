@@ -96,5 +96,24 @@
   "welcomeBtnFinish": { "message": "Finalizar Configuración" },
   "welcomeBtnNext": { "message": "Siguiente" },
   "welcomeLabelVoice": { "message": "Personalización de Voz" },
-  "welcomeBtnListen": { "message": "Escuchar Voces" }
+  "welcomeBtnListen": { "message": "Escuchar Voces" },
+  "welcomeSubtitle": { "message": "Configura Aurora en dos pasos rápidos." },
+  "welcomeFeatureAmbient": { "message": "Fondos ambientales que mantienen a ChatGPT calmado y enfocado." },
+  "welcomeFeatureGlass": { "message": "Superficies de vidrio que puedes ajustar entre claro y atenuado." },
+  "welcomeFeatureVoice": { "message": "Ajustes de la interfaz de voz con colores y modo adorable." },
+  "welcomeBtnSkip": { "message": "Omitir por ahora" },
+  "welcomePeekLabel": { "message": "Echar un vistazo a ChatGPT" },
+  "welcomePeekResume": { "message": "Reanudar configuración" },
+  "welcomePeekSkip": { "message": "Omitir configuración" },
+  "welcomeTitleVoiceSetup": { "message": "Ajusta la interfaz de voz" },
+  "welcomeDescriptionVoiceSetup": { "message": "Elige un color de voz y decide si quieres los detalles adorables." },
+  "welcomeBtnPreviewVoice": { "message": "Previsualizar interfaz de voz" },
+  "welcomeStepIndicator": {
+    "message": "Paso $CURRENT$ de $TOTAL$",
+    "placeholders": {
+      "current": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "welcomeBtnBack": { "message": "Atrás" }
 }

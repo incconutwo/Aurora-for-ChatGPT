@@ -96,5 +96,24 @@
   "welcomeBtnFinish": { "message": "Finish Setup" },
   "welcomeBtnNext": { "message": "Next" },
   "welcomeLabelVoice": { "message": "Voice Customization" },
-  "welcomeBtnListen": { "message": "Listen to Voices" }
+  "welcomeBtnListen": { "message": "Listen to Voices" },
+  "welcomeSubtitle": { "message": "Set up Aurora in two quick steps." },
+  "welcomeFeatureAmbient": { "message": "Ambient backgrounds that make ChatGPT feel calm and focused." },
+  "welcomeFeatureGlass": { "message": "Glass surfaces you can tune for clear or dimmed looks." },
+  "welcomeFeatureVoice": { "message": "Voice UI tweaks including colors and cute mode." },
+  "welcomeBtnSkip": { "message": "Skip for now" },
+  "welcomePeekLabel": { "message": "Peek at ChatGPT" },
+  "welcomePeekResume": { "message": "Resume setup" },
+  "welcomePeekSkip": { "message": "Skip setup" },
+  "welcomeTitleVoiceSetup": { "message": "Tune the Voice UI" },
+  "welcomeDescriptionVoiceSetup": { "message": "Pick a voice color and decide if you want the cute UI accents." },
+  "welcomeBtnPreviewVoice": { "message": "Preview voice UI" },
+  "welcomeStepIndicator": {
+    "message": "Step $CURRENT$ of $TOTAL$",
+    "placeholders": {
+      "current": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "welcomeBtnBack": { "message": "Back" }
 }
