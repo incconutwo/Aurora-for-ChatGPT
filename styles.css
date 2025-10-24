@@ -608,3 +608,11 @@ html.cgpt-ambient-on:not(.cgpt-legacy-composer) div.sticky.content-fade-top:has(
   margin-top: 8px;
   margin-bottom: 8px;
 }
+html.cgpt-ambient-on:not(.cgpt-legacy-composer) .flex-col.w-full.h-full.flex.z-50.top-0.start-0.fixed.bg-token-main-surface-primary {
+  background: rgba(18, 18, 18, 0.5) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+}
+html.cgpt-ambient-on.cgpt-light-mode:not(.cgpt-legacy-composer) .flex-col.w-full.h-full.flex.z-50.top-0.start-0.fixed.bg-token-main-surface-primary {
+  background: rgba(255, 255, 255, 0.5) !important;
+}

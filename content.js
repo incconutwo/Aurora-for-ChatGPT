@@ -671,6 +671,13 @@ function manageUpgradeButtons() {
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   }
 
+  function applyWelcomePreviewSettings(changedKey) {
+    if (changedKey === 'customBgUrl') {
+      updateBackgroundImage();
+    }
+    applyRootFlags();
+  }
+
   const getWelcomeScreenHTML = () => `
     <div id="aurora-welcome-overlay">
         <div class="welcome-container">
@@ -809,7 +816,7 @@ function manageUpgradeButtons() {
                 pill.classList.add('active');
                 tempSettings.voiceColor = opt.value;
                 settings.voiceColor = opt.value; // for live preview
-                applyAllSettings();
+                applyWelcomePreviewSettings('voiceColor');
             });
             voicePillsContainer.appendChild(pill);
         });
@@ -822,7 +829,7 @@ function manageUpgradeButtons() {
             const isChecked = e.target.checked;
             tempSettings.cuteVoiceUI = isChecked;
             settings.cuteVoiceUI = isChecked; // for live preview
-            applyAllSettings();
+            applyWelcomePreviewSettings('cuteVoiceUI');
         });
     }
 
@@ -838,7 +845,7 @@ function manageUpgradeButtons() {
             
             tempSettings.customBgUrl = newUrl;
             settings.customBgUrl = newUrl; // Mutate global settings for live preview
-            applyAllSettings();
+            applyWelcomePreviewSettings('customBgUrl');
         });
     });
 
@@ -849,7 +856,7 @@ function manageUpgradeButtons() {
             const appearanceChoice = pill.dataset.appearance;
             tempSettings.appearance = appearanceChoice;
             settings.appearance = appearanceChoice; // Mutate for live preview
-            applyAllSettings();
+            applyWelcomePreviewSettings('appearance');
         });
     });
 
