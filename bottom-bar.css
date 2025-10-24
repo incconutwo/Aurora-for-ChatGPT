@@ -1,0 +1,353 @@
+/* Aurora for ChatGPT - Bottom Bar Component Styles */
+
+.bottom-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  min-height: var(--bar-height, 72px);
+  background: var(--bar-bg, rgba(20, 20, 24, 0.88));
+  border-top: 1px solid var(--bar-border, rgba(255, 255, 255, 0.12));
+  box-shadow: var(--bar-shadow, 0 -12px 26px rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(var(--bar-blur, 24px)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--bar-blur, 24px)) saturate(1.2);
+  padding: var(--bar-padding, 16px);
+  padding-bottom: calc(var(--bar-padding, 16px) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bar-gap, 12px);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  color: var(--bar-text-color, #f8f9ff);
+}
+
+html.theme-light .bottom-bar {
+  color: var(--bar-text-color-light, #0f172a);
+}
+
+.bottom-bar-left,
+.bottom-bar-center,
+.bottom-bar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--bar-gap, 12px);
+}
+
+.bottom-bar-center {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.bottom-bar-left,
+.bottom-bar-right {
+  flex: 0 1 auto;
+}
+
+.bottom-bar-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  background: var(--bar-btn-bg, rgba(255, 255, 255, 0.24));
+  border: 1px solid var(--bar-btn-border, rgba(255, 255, 255, 0.28));
+  color: inherit;
+}
+
+html.theme-light .bottom-bar-btn {
+  background: var(--bar-btn-bg-light, rgba(15, 23, 42, 0.08));
+  border-color: var(--bar-btn-border-light, rgba(15, 23, 42, 0.12));
+}
+
+.bottom-bar-btn:hover {
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+html.theme-light .bottom-bar-btn:hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.bottom-bar-btn:active {
+  transform: translateY(0);
+}
+
+.bottom-bar-btn:focus-visible {
+  outline: 2px solid rgba(79, 140, 255, 0.7);
+  outline-offset: 2px;
+}
+
+.bottom-bar-btn.primary {
+  background: linear-gradient(135deg, #4f8cff 0%, #6366f1 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(79, 140, 255, 0.45);
+}
+
+.bottom-bar-btn.primary:hover {
+  background: linear-gradient(135deg, #6399ff 0%, #7577f4 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(79, 140, 255, 0.5);
+}
+
+.bottom-bar-btn.secondary {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+}
+
+.bottom-bar-btn.secondary:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.bottom-bar-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.bottom-bar-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-step {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 30%, transparent);
+  transition: all 0.3s ease;
+}
+
+.progress-step.active {
+  width: 24px;
+  border-radius: 4px;
+  background: #4f8cff;
+}
+
+.progress-step.completed {
+  background: rgba(79, 140, 255, 0.7);
+}
+
+.bottom-bar-menu {
+  position: relative;
+}
+
+.bottom-bar-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px;
+  background: var(--bar-btn-bg, rgba(255, 255, 255, 0.24));
+  border: 1px solid var(--bar-btn-border, rgba(255, 255, 255, 0.28));
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+html.theme-light .bottom-bar-menu-btn {
+  background: var(--bar-btn-bg-light, rgba(15, 23, 42, 0.08));
+  border-color: var(--bar-btn-border-light, rgba(15, 23, 42, 0.12));
+}
+
+.bottom-bar-menu-btn:hover {
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  transform: scale(1.05);
+}
+
+.bottom-bar-menu-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.bottom-bar-menu-content {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: var(--bar-bg, rgba(20, 20, 24, 0.88));
+  border: 1px solid var(--bar-border, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(var(--bar-blur, 24px));
+  -webkit-backdrop-filter: blur(var(--bar-blur, 24px));
+  padding: 6px;
+  display: none;
+  z-index: 1001;
+}
+
+.bottom-bar-menu-content.visible {
+  display: block;
+  animation: menu-slide-up 0.2s ease;
+}
+
+@keyframes menu-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bottom-bar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: inherit;
+}
+
+.bottom-bar-menu-item:hover {
+  background: color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.bottom-bar-menu-item svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.bottom-bar-kbd-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  color: color-mix(in srgb, currentColor 65%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  margin-left: auto;
+}
+
+html.theme-light .bottom-bar-kbd-hint {
+  color: rgba(17, 24, 39, 0.7);
+}
+
+.bottom-bar-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 1002;
+}
+
+.bottom-bar-btn:hover .bottom-bar-tooltip,
+.bottom-bar-menu-btn:hover .bottom-bar-tooltip {
+  opacity: 1;
+}
+
+html.theme-light .bottom-bar-tooltip {
+  background: rgba(0, 0, 0, 0.82);
+}
+
+@media (max-width: 360px) {
+  .bottom-bar {
+    --bar-padding: 12px;
+    --bar-gap: 8px;
+    --bar-height: 60px;
+  }
+
+  .bottom-bar-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .bottom-bar-btn .btn-label {
+    display: none;
+  }
+
+  .bottom-bar-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .bottom-bar-progress {
+    display: none;
+  }
+
+  .bottom-bar-left,
+  .bottom-bar-right {
+    gap: 6px;
+  }
+
+  .bottom-bar-btn::after {
+    content: attr(aria-label);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    font-size: 11px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .bottom-bar-btn:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@media (prefers-contrast: high) {
+  .bottom-bar-btn:focus-visible {
+    outline: 3px solid #4f8cff;
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-bar,
+  .bottom-bar-btn,
+  .progress-step,
+  .bottom-bar-menu-btn,
+  .bottom-bar-menu-item,
+  .bottom-bar-tooltip {
+    transition: none;
+  }
+
+  .bottom-bar-menu-content.visible {
+    animation: none;
+  }
+
+  .bottom-bar-btn:hover::after {
+    transition: none;
+  }
+}

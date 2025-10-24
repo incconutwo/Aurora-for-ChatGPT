@@ -26,6 +26,24 @@ html.cgpt-light-mode #cgpt-qs-btn {
   border-color: rgba(0,0,0,0.1);
 }
 html.cgpt-light-mode #cgpt-qs-btn svg { color: #000; }
+#cgpt-qs-btn.qs-highlight {
+  animation: qs-btn-highlight 2s ease;
+}
+
+@keyframes qs-btn-highlight {
+  0%, 100% { 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transform: scale(1);
+  }
+  10%, 30%, 50%, 70%, 90% { 
+    box-shadow: 0 0 0 0 rgba(79, 140, 255, 0.7), 0 0 0 8px rgba(79, 140, 255, 0.3), 0 0 0 16px rgba(79, 140, 255, 0.1);
+    transform: scale(1.1);
+  }
+  20%, 40%, 60%, 80% { 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transform: scale(1);
+  }
+}
 
 /* NEW: Keyframe animations for the panel */
 @keyframes qs-panel-open {
