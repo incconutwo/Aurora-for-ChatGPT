@@ -772,6 +772,7 @@ function manageUpgradeButtons() {
           }
 
           if (welcomeContainer) {
+              // Fade out the main modal, then show the first setup bar
               setTimeout(() => {
                   welcomeContainer.style.display = 'none';
                   if (styleBar) styleBar.classList.add('active');
@@ -789,6 +790,7 @@ function manageUpgradeButtons() {
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
             if (styleBar) styleBar.classList.remove('active');
+            // This click reveals the voice UI on the main page for live preview
             document.querySelector('[data-testid="composer-speech-button"]')?.click();
 
             setTimeout(() => {
@@ -816,20 +818,21 @@ function manageUpgradeButtons() {
                 pill.classList.add('active');
                 tempSettings.voiceColor = opt.value;
                 settings.voiceColor = opt.value; // for live preview
-                applyWelcomePreviewSettings('voiceColor');
+                applyAllSettings(); // Use full apply for robust preview
             });
             voicePillsContainer.appendChild(pill);
         });
+        // Set default active pill
+        const defaultVoicePill = voicePillsContainer.querySelector('.voice-pill[data-value="default"]');
+        if (defaultVoicePill) defaultVoicePill.classList.add('active');
     }
-    const defaultVoicePill = document.querySelector('.voice-pill[data-value="default"]');
-    if (defaultVoicePill) defaultVoicePill.classList.add('active');
     
     if (welcomeCuteVoiceUIToggle) {
         welcomeCuteVoiceUIToggle.addEventListener('change', (e) => {
             const isChecked = e.target.checked;
             tempSettings.cuteVoiceUI = isChecked;
             settings.cuteVoiceUI = isChecked; // for live preview
-            applyWelcomePreviewSettings('cuteVoiceUI');
+            applyAllSettings(); // Use full apply for robust preview
         });
     }
 
@@ -845,7 +848,7 @@ function manageUpgradeButtons() {
             
             tempSettings.customBgUrl = newUrl;
             settings.customBgUrl = newUrl; // Mutate global settings for live preview
-            applyWelcomePreviewSettings('customBgUrl');
+            applyAllSettings();
         });
     });
 
@@ -856,7 +859,7 @@ function manageUpgradeButtons() {
             const appearanceChoice = pill.dataset.appearance;
             tempSettings.appearance = appearanceChoice;
             settings.appearance = appearanceChoice; // Mutate for live preview
-            applyWelcomePreviewSettings('appearance');
+            applyAllSettings();
         });
     });
 
