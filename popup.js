@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let settingsCache = {}; // Cache for current settings to enable synchronous checks and quick updates.
   let DEFAULTS_CACHE = {}; // Add this line
   let searchableSettings = []; // New: For search functionality
+  let selectedPreset = null;
 
   const applyStaticLocalization = () => {
     document.querySelectorAll('[data-i18n]').forEach((el) => {
@@ -409,6 +410,121 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- Welcome V2 Functions ---
+  const initWelcomeV2 = () => {
+    const welcomeView = document.getElementById('welcomeV2');
+    const settingsView = document.getElementById('settingsView');
+    const bottomBarContainer = document.getElementById('welcomeV2BottomBar');
+    const presetCards = document.querySelectorAll('.welcome-v2-preset-card');
+    const presetFileInput = document.getElementById('welcomePresetFile');
+
+    presetCards.forEach(card => {
+      card.addEventListener('click', () => {
+        presetCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedPreset = card.dataset.preset;
+      });
+    });
+
+    const handleWelcomeAction = (action) => {
+      if (action === 'get-started') {
+        if (selectedPreset) {
+          let bgUrl = '';
+          if (selectedPreset === '__gpt5_animated__') {
+            bgUrl = '__gpt5_animated__';
+          } else if (selectedPreset === 'grokHorizon') {
+            bgUrl = GROK_HORIZON_URL;
+          } else if (selectedPreset === 'blue') {
+            bgUrl = BLUE_WALLPAPER_URL;
+          }
+          chrome.storage.sync.set({ 
+            customBgUrl: bgUrl,
+            hasSeenWelcomeV2: true 
+          }, () => {
+            welcomeView.hidden = true;
+            settingsView.hidden = false;
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+              if (tabs[0]) {
+                chrome.tabs.sendMessage(tabs[0].id, { 
+                  action: 'openQuickSettings',
+                  highlight: true 
+                });
+              }
+            });
+          });
+        } else {
+          chrome.storage.sync.set({ hasSeenWelcomeV2: true }, () => {
+            welcomeView.hidden = true;
+            settingsView.hidden = false;
+          });
+        }
+      } else if (action === 'skip') {
+        chrome.storage.sync.set({ hasSeenWelcomeV2: true }, () => {
+          welcomeView.hidden = true;
+          settingsView.hidden = false;
+        });
+      } else if (action === 'import') {
+        presetFileInput.click();
+      }
+    };
+
+    presetFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const presets = JSON.parse(event.target.result);
+          if (presets.customBgUrl) {
+            chrome.storage.sync.set(presets);
+          }
+        } catch (err) {
+          console.error('Error importing presets:', err);
+        }
+      };
+      reader.readAsText(file);
+      presetFileInput.value = '';
+    });
+
+    const bottomBar = BottomBar.create({
+      leftButtons: [
+        {
+          id: 'welcome-skip',
+          label: getMessage('welcomeV2BtnSkip'),
+          type: 'secondary',
+          action: 'skip',
+          ariaLabel: getMessage('welcomeV2BtnSkip')
+        }
+      ],
+      rightButtons: [
+        {
+          id: 'welcome-get-started',
+          label: getMessage('welcomeV2BtnGetStarted'),
+          type: 'primary',
+          action: 'get-started',
+          ariaLabel: getMessage('welcomeV2BtnGetStarted'),
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>'
+        }
+      ],
+      menuItems: [
+        {
+          label: getMessage('welcomeV2BtnImportPresets'),
+          action: 'import',
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>'
+        }
+      ],
+      onAction: handleWelcomeAction
+    });
+
+    bottomBarContainer.appendChild(bottomBar);
+
+    BottomBar.setupKeyboardNavigation(bottomBar, {
+      onEscape: () => handleWelcomeAction('skip'),
+      onEnter: () => handleWelcomeAction('get-started')
+    });
+  };
+
   // --- Initial Load ---
   if (chrome.runtime?.sendMessage) {
     // Fetch the DEFAULTS object from the background script first
@@ -429,6 +545,20 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
         settingsCache = settings;
+
+        // Check if we should show Welcome V2
+        const welcomeView = document.getElementById('welcomeV2');
+        const settingsView = document.getElementById('settingsView');
+        
+        if (!settings.hasSeenWelcomeV2) {
+          welcomeView.hidden = false;
+          settingsView.hidden = true;
+          initWelcomeV2();
+        } else {
+          welcomeView.hidden = true;
+          settingsView.hidden = false;
+        }
+
         updateUi(settings);
         buildSearchableData(); // New: Build search index after UI and text is loaded
       });

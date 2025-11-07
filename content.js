@@ -347,6 +347,21 @@ function manageUpgradeButtons() {
     });
   }
 
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'openQuickSettings') {
+      manageQuickSettingsUI();
+      const btn = document.getElementById(QS_BUTTON_ID);
+      const panel = document.getElementById(QS_PANEL_ID);
+      if (btn && panel) {
+        panel.setAttribute('data-state', 'open');
+        if (request.highlight) {
+          btn.classList.add('qs-highlight');
+          setTimeout(() => btn.classList.remove('qs-highlight'), 2000);
+        }
+      }
+    }
+  });
+
   function setupQuickSettingsVoiceSelector(settings) {
     const voiceColorOptions = [
       { value: 'default', labelKey: 'voiceColorOptionDefault', color: '#8EBBFF' },

@@ -18,7 +18,8 @@ const DEFAULTS = {
   voiceColor: 'default',
   cuteVoiceUI: false,
   showInNewChatsOnly: false,
-  hasSeenWelcomeScreen: false
+  hasSeenWelcomeScreen: false,
+  hasSeenWelcomeV2: false
 };
 
 chrome.runtime.onInstalled.addListener((details) => {
